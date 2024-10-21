@@ -1,0 +1,19 @@
+{
+  "name": "typescipt",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "lint": "tslint --project tsconfig.json",
+    "format": "prettier --write '**/*.{ts,tsx,js,jsx}'",
+    "dev": "tsc-watch --project . --onSuccess \"node ./build\""
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "tsc-watch": "^6.2.0",
+    "typescript": "^5.6.3"
+  }
+}
