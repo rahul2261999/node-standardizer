@@ -1,17 +1,42 @@
-import { 
-  ArrayValidationRules, 
-  BooleanValidationRules, 
-  NumberValidationRules, 
-  ObjectValidationRules, 
-  StringValidationRules, 
-  ValidatorFunction, 
-  ValidatorResponse 
+import {
+  ArrayValidationRules,
+  BooleanValidationRules,
+  NumberValidationRules,
+  ObjectValidationRules,
+  StringValidationRules,
+  ValidatorFunction,
+  ValidatorResponse
 } from "./validator.interface";
 
 
 class Validation implements ValidatorFunction {
   public validateBoolean(param: boolean, validatorRules: BooleanValidationRules): ValidatorResponse {
-    throw new Error("Method not implemented.");
+
+    if(validatorRules.required && param === undefined) {
+      return {
+        isValid: false,
+        message: validatorRules.errorMessage || 'param is required.'
+      };
+    }
+
+    if(validatorRules.value !== param) {
+      return {
+        isValid: false,
+        message: validatorRules.errorMessage || 'param value did not matched the provided value.'
+      };
+    }
+
+    if(validatorRules.customValidator !== undefined && !validatorRules.customValidator()) {
+      return {
+        isValid: false,
+        message: validatorRules.errorMessage || 'Custom validator failed.'
+      }
+    }
+
+    return {
+      isValid: true,
+      message: null
+    };
   }
   public validateString(param: string, validatorRules: StringValidationRules): ValidatorResponse {
     // Check if the param is required and if it's present
@@ -158,25 +183,28 @@ class Validation implements ValidatorFunction {
     }
 
 
-    for (let key in Object.keys(validatorRules)) {
-      //@ts-ignore
-      const rule = validatorRules[key];
+    if (validatorRules.childrens) {
+      for (let key of Object.keys(validatorRules.childrens)) {
+        //@ts-ignore
+        const rule = validatorRules.childrens[key];
 
-      // @ts-ignore
-      const param = params[key];
+        // @ts-ignore
+        const param = params[key];
 
-      if (param === undefined || rule === null) {
-        continue;
+        if (param === undefined || rule === null) {
+          continue;
+        }
+
+        const result = this.dynamicValidation(param, rule);
+
+        // If any validation fails, return the first failure message and set isValid to false
+        if (!result.isValid) {
+          return result
+        }
+
       }
-
-      const result = this.dynamicValidation(param, rule);
-
-      // If any validation fails, return the first failure message and set isValid to false
-      if (!result.isValid) {
-        return result
-      }
-
     }
+
 
     return {
       isValid: true,
@@ -184,7 +212,7 @@ class Validation implements ValidatorFunction {
     }
   }
 
-  public validateArray<T>(param: T[], validatorRules: ArrayValidationRules<T>): ValidatorResponse {
+  public validateArray<T>(param: T[], validatorRules: ArrayValidationRules<T[]>): ValidatorResponse {
     // Check if the param is required and if it's present
     if (validatorRules.required && param === undefined) {
       return {
@@ -278,61 +306,4 @@ class Validation implements ValidatorFunction {
 
 const validation = new Validation();
 
-
-
-const sampleObject = {
-  name: "John Doe",           // String
-  age: 28,                    // Number
-  email: "john.doe@example.com", // String
-  isActive: true,             // Boolean
-  address: {                  // Nested Object
-    street: "123 Main St",    // String
-    city: "New York",         // String
-    zipCode: "10001"          // String
-  },
-  phoneNumbers: [             // Array of Strings
-    "+1-555-555-5555",
-    "+1-555-555-5556"
-  ],
-  preferences: {              // Nested Object
-    notifications: {          // Nested Object
-      email: true,            // Boolean
-      sms: false,             // Boolean
-      push: true              // Boolean
-    }
-  },
-  tags: ["premium", "vip"],   // Array of Strings
-  metadata: {                 // Nested Object with mixed data types
-    lastLogin: "2024-10-19T12:34:56Z", // String (ISO date)
-    loginAttempts: 5,         // Number
-    history: [                // Array of Objects
-      {
-        date: "2024-09-15T10:20:30Z", // String (ISO date)
-        action: "login"
-      },
-      {
-        date: "2024-09-16T11:25:35Z", // String (ISO date)
-        action: "logout"
-      }
-    ]
-  },
-  customData: [               // Array with mixed data types
-    { key: "height", param: 180 },    // Object (key-param pair)
-    { key: "weight", param: 75 }
-  ],
-  preferencesArray: [         // Array of objects
-    {
-      setting: "darkMode",    // String
-      enabled: true           // Boolean
-    },
-    {
-      setting: "autoSave",    // String
-      enabled: false          // Boolean
-    }
-  ],
-  nestedArray: [
-    [1, 2, 3],
-    [4, 5, 6],
-    [7, 8, 9]
-  ]
-};
+export default validation;

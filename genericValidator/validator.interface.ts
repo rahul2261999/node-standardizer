@@ -6,7 +6,7 @@ export interface CommonRules  {
 
   customValidator?: (...args: any) => boolean;
 }
-export interface BooleanValidationRules extends CommonRules {
+export interface BooleanValidationRules extends Pick<CommonRules, 'customValidator' | 'errorMessage' | 'required'> {
   value: boolean;
 }
 
@@ -22,9 +22,9 @@ export interface NumberValidationRules extends CommonRules {
 
 export type ArrayItemValidationRules<T> = T extends (infer U)[]
   ? U extends any[]
-  ? ArrayValidationRules<U> // Recursively apply for nested arrays
-  : TypeBasedValidationRules<U>
-  : never;
+    ? ArrayValidationRules<U>
+    : TypeBasedValidationRules<U>
+  : TypeBasedValidationRules<T>;
 
 
 export interface ArrayValidationRules<T> extends CommonRules{
@@ -49,6 +49,8 @@ export type TypeBasedValidationRules<T> = T extends any[]
   ? NumberValidationRules // If U is a number, apply NumberValidationRules
   : T extends string
   ? StringValidationRules // If U is a string, apply StringValidationRules
+  : T extends boolean
+  ? BooleanValidationRules // If U is a boolean, apply BooleanValidationRules
   : never
 
 
@@ -62,5 +64,5 @@ export interface ValidatorFunction {
   validateString(param: string, validatorRules: StringValidationRules): ValidatorResponse;
   validateNumber(param: number, validatorRules: NumberValidationRules): ValidatorResponse;
   validateObject<T>(params: T, validatorRules: ObjectValidationRules<T>): ValidatorResponse;
-  validateArray<T=any[]>(param: T[], validatorRules: ArrayValidationRules<T>): ValidatorResponse;
+  validateArray<T=any[]>(param: T[], validatorRules: ArrayValidationRules<T[]>): ValidatorResponse;
 }

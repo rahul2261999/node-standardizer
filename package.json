@@ -5,10 +5,11 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "pre-build": "rm -R build",
     "build": "tsc",
     "lint": "tslint --project tsconfig.json",
     "format": "prettier --write '**/*.{ts,tsx,js,jsx}'",
-    "dev": "tsc-watch --project . --onSuccess \"node ./build\""
+    "dev": "npm run pre-build && tsc-watch --project . --onSuccess \"node ./build\""
   },
   "author": "",
   "license": "ISC",
